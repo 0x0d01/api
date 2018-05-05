@@ -98,4 +98,14 @@ router.get('/requests/data/:request_id', async (req, res, next) => {
   }
 });
 
+//should revise name, design do not have this API
+router.put('/requests/close/:request_id', async (req, res, next) => {
+  try {
+    res.status(200).send(await abciAppRpApi.closeRequest(req.params.request_id));
+  }
+  catch (error) {
+    res.status(500).end();
+  }
+});
+
 export default router;

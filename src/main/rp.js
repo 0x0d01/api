@@ -98,6 +98,13 @@ async function sendRequestToAS(requestData) {
   }
 }
 
+export async function createTimeoutHandler(requestId, timeout) {
+  setTimeout(async function() {
+    let request = await common.getRequest({ requestId });
+    if(request.status === 'pending') closeRequest(requestId);
+  }, timeout);
+}
+
 export async function createRequest({
   namespace,
   identifier,
@@ -149,7 +156,10 @@ export async function createRequest({
     data_request_list: data_request_list_to_blockchain,
     message_hash: await utils.hash(data.request_message)
   };
-  utils.updateChain('CreateRequest', dataToBlockchain, nonce);
+  utils.updateChain('CreateRequest', dataToBlockchain, nonce)
+  .then(function([result, height]) {
+    if(result == 'true') createTimeoutHandler(request_id, data.timeout);
+  });
 
   //query node_id and public_key to send data via mq
   getIdpMqDestination({
@@ -194,6 +204,14 @@ export async function createRequest({
   referenceMapping[reference_id] = request_id;
   callbackUrls[request_id] = data.callback_url;
   return request_id;
+}
+
+export async function closeRequest(request_id) {
+  //may need to change function name
+  let nonce = utils.getNonce();
+  return await utils.updateChain('CloseRequest', { 
+    requestId: request_id
+  }, nonce);
 }
 
 export async function getIdpMqDestination(data) {
