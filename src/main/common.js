@@ -9,7 +9,7 @@ import { role, nodeId } from '../config';
 export let syncing = null;
 export let latestBlockHeight = null;
 
-// FIXME: To be removed when init() in main/rp.js, main/idp.js, and main/as.js are removed.
+// FIXME: To be removed when init() in main/rp.js, main/idp.js, main/as.js, and devInitKey.js are removed.
 export const tendermintReady = (async () => {
   for (;;) {
     if (syncing === false) return;
@@ -32,11 +32,15 @@ async function pollStatusUtilSynced() {
 }
 
 tendermintWsClient.on('connected', () => {
+  console.log('Waiting for tendermint to finish syncing blockchain');
   pollStatusUtilSynced();
 });
 
 tendermintWsClient.on('statusUtilSynced', (error, result) => {
   syncing = result.syncing;
+  if (syncing === false) {
+    console.log('Tendermint blockchain synced');
+  }
 });
 
 tendermintWsClient.on('newBlock#event', (error, result) => {
