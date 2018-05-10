@@ -7,6 +7,8 @@ import utilityRouter from './utility';
 import dpkiRouter from './dpki';
 import ndidRouter from './nationalDigitalIdentity';
 
+import { syncing } from '../main/common';
+
 import * as config from '../config';
 
 const router = express.Router();
@@ -25,6 +27,16 @@ if (env === 'development') {
     next();
   });
 }
+
+router.use((req, res, next) => {
+  // Reject all requests when tendermint is not yet ready.
+  // This includes when tendermint is syncing (happens when starting a new node or resuming tendermint)
+  if (syncing == null || syncing === true) {
+    res.status(503).send({ message: 'Syncing blockchain data. Please try again later.' });
+    return;
+  }
+  next();
+});
 
 if (config.role === 'rp') {
   router.use('/rp', rpRouter);

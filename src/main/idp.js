@@ -171,11 +171,15 @@ export async function handleTendermintNewBlockEvent(error, result) {
 
 //===================== Initialize before flow can start =======================
 
+// FIXME: to be removed
 export async function init() {
-  //TODO
-  //In production this should be done only once in phase 1,
-  //when IDP request to join approved NDID
-  //after first approved, IDP can add other key and node and endorse themself
+  // In production this should be done only once in phase 1,
+  // when IDP request to join approved NDID
+  // after first approved, IDP can add other key and node and endorse themselves
+
+  // Wait for blockchain ready
+  await common.tendermintReady;
+
   /*let node_id = config.mqRegister.ip + ':' + config.mqRegister.port;
   process.env.nodeId = node_id;
   common.addNodePubKey({

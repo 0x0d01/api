@@ -324,11 +324,15 @@ async function handleMessageFromQueue(data) {
   });
 }
 
+// FIXME: to be removed
 export async function init() {
-  //TODO
-  //In production this should be done only once in phase 1,
-  //when RP request to join approved NDID
-  //after first approved, RP can add other key and node and endorse themself
+  // In production this should be done only once in phase 1,
+  // when RP request to join approved NDID
+  // after first approved, RP can add other key and node and endorse themself
+
+  // Wait for blockchain ready
+  await common.tendermintReady;
+
   /*let node_id = config.mqRegister.ip + ':' + config.mqRegister.port;
   process.env.nodeId = node_id;
   common.addNodePubKey({

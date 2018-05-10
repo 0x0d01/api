@@ -238,8 +238,13 @@ export async function handleTendermintNewBlockEvent(error, result) {
 
 //===================== Initialize before flow can start =======================
 
+// FIXME: to be removed
 export async function init() {
   // In production environment, this should be done with register service process.
+
+  // Wait for blockchain ready
+  await common.tendermintReady;
+
   // TODO
   //register node id, which is substituted with ip,port for demo
   //let node_id = config.mqRegister.ip + ':' + config.mqRegister.port;

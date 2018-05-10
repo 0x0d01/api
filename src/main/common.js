@@ -1,13 +1,47 @@
 import * as tendermint from '../tendermint/ndid';
-import TendermintEvent from '../tendermint/event';
+import TendermintWsClient from '../tendermint/wsClient';
 import * as rp from './rp';
 import * as idp from './idp';
 import * as as from './as';
 import * as utils from '../utils';
 import { role, nodeId } from '../config';
 
-const tendermintEvent = new TendermintEvent();
-tendermintEvent.on('newBlock#event', (error, result) => {
+export let syncing = null;
+export let latestBlockHeight = null;
+
+// FIXME: To be removed when init() in main/rp.js, main/idp.js, and main/as.js are removed.
+export const tendermintReady = (async () => {
+  for (;;) {
+    if (syncing === false) return;
+    // if (latestBlockHeight > 2) return;
+    await utils.wait(1000);
+  }
+})();
+
+const tendermintWsClient = new TendermintWsClient();
+
+async function pollStatusUtilSynced() {
+  for (;;) {
+    if (syncing == null || syncing === true) {
+      tendermintWsClient.getStatus('statusUtilSynced');
+      await utils.wait(1000);
+    } else {
+      break;
+    }
+  }
+}
+
+tendermintWsClient.on('connected', () => {
+  pollStatusUtilSynced();
+});
+
+tendermintWsClient.on('statusUtilSynced', (error, result) => {
+  syncing = result.syncing;
+});
+
+tendermintWsClient.on('newBlock#event', (error, result) => {
+  latestBlockHeight = result.data.data.block.header.height;
+
   let handleTendermintNewBlockEvent;
   if (role === 'rp') {
     handleTendermintNewBlockEvent = rp.handleTendermintNewBlockEvent;
